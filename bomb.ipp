@@ -1,3 +1,4 @@
+#pragma once
 #include "bomb.h"
 
 namespace Lunaris {
