@@ -9,7 +9,7 @@ namespace Bomb {
         m_bomb = std::make_unique<_bomb>(std::move(callback), seconds);
     }
 
-    TimedBomb::TimedBomb(TimedBomb&& oth) 
+    TimedBomb::TimedBomb(TimedBomb&& oth) noexcept
         : m_bomb(std::move(oth.m_bomb))
     {}
 

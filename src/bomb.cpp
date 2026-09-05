@@ -7,7 +7,7 @@ namespace Bomb {
         : m_callback(std::move(callback))
     {}
 
-    Bomb::Bomb(Bomb&& oth)
+    Bomb::Bomb(Bomb&& oth) noexcept
         : m_callback(std::move(oth.m_callback))
     {
         oth.m_defused = true;

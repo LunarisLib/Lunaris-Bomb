@@ -28,7 +28,7 @@ namespace Bomb {
          * 
          * @param `oth` moving bomb
          */
-        TimedBomb(TimedBomb&& oth);
+        TimedBomb(TimedBomb&& oth) noexcept;
         
         ~TimedBomb();
 
