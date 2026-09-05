@@ -1,35 +1,36 @@
 #pragma once
 
-#include <functional>
-#include <atomic>
+#include <condition_variable>
+#include <thread>
+#include <mutex>
+
+#include <Lunaris/Bomb/bomb.h>
 
 namespace Lunaris {
 namespace Bomb {
-    
+
     /**
-     * @brief Bomb is a really good tool when you need something to run then everything is destroyed (when things goes out of scope).
+     * @brief A TimedBomb should feel like a bomb, but it has a timer trigger too! If timed out or destroyed, BOOM.
      * 
-     * You create the bomb with a function. The function is run when the object is destroyed. Easy, right?
-     * 
-     * You can defuse the bomb if you don't want the function running at the end, maybe you've set the bomb for exception recovery and if things goes right you defuse it, I don't know.
      */
-    class Bomb {
+    class TimedBomb {
     public:
         /**
          * @brief Construct a new bomb object
          * 
          * @param `callback` function to call on explosion
+         * @param `seconds` how many seconds to timeout and explode anyway?
          */
-        Bomb(std::function<void()> callback);
+        TimedBomb(std::function<void()> callback, const double seconds);
 
         /**
          * @brief Move bomb object to this
          * 
          * @param `oth` moving bomb
          */
-        Bomb(Bomb&& oth) noexcept;
+        TimedBomb(TimedBomb&& oth);
         
-        ~Bomb();
+        ~TimedBomb();
 
         /**
          * @brief Assign this bomb another bomb.
@@ -38,12 +39,12 @@ namespace Bomb {
          * 
          * @param `oth` the moving bomb
          */
-        void operator=(Bomb&& oth);
+        void operator=(TimedBomb&& oth);
 
         /**
          * @brief Removes the bomb from it (returns the function and defuses itself)
          * 
-         * @return `std::function<void()>` the function that'd be run on destruction
+         * @return `std::function<void()>` the function that'd be run on destruction or timeout
          */
         std::function<void()> defuse();
 
@@ -54,11 +55,19 @@ namespace Bomb {
          */
         bool is_defused() const;
     private:
-        void explode_if_not_defused();
+        struct _bomb {
+            Bomb bomb;
+            std::condition_variable cond;
+            std::thread thr;
+            std::mutex mtx;
+            std::atomic<bool> cancel_timer{false};
 
-        std::function<void()> m_callback;
-        std::atomic<bool> m_defused{false};
+            _bomb(std::function<void()>, const double);
+            ~_bomb();
+        };
+
+        std::unique_ptr<_bomb> m_bomb;
     };
-
+    
 } // namespace Bomb
 } // namespace Lunaris
